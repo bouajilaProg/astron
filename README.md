@@ -6,7 +6,7 @@
 
 Terminal space scene with animated sprites, built with Go, Bubble Tea, and Lip Gloss.
 
-![astron preview](https://placehold.co/800x400/080811/7EF9FF?text=astron+preview)
+![astron preview](preview.png)
 
 ## Installation
 

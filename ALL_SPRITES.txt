@@ -1,0 +1,318 @@
+package sprites
+
+var Comet1 = SpriteDef{
+	Art: []string{
+		"      .      ",
+		"  .  :  .    ",
+		" ::::::::(@)",
+		"  '  :  '    ",
+		"      '      ",
+	},
+	DefaultVX: 0.3,
+	DefaultVY: 0.1,
+}
+
+var Comet2 = SpriteDef{
+	Art: []string{
+		"     .---.          ",
+		"====(     )  .      ",
+		"     `---'          ",
+	},
+	DefaultVX: 0.4,
+	DefaultVY: 0.0,
+}
+
+var Comets = []SpriteDef{Comet1, Comet2}
+package sprites
+
+var MeteorSmall = SpriteDef{
+	Art: []string{
+		" .-. ",
+		"( o )",
+		" `-' ",
+	},
+	DefaultVX: -0.2,
+	DefaultVY: 0.15,
+}
+
+var MeteorMedium = SpriteDef{
+	Art: []string{
+		"  _..---.._  ",
+		" /  _  _   \\ ",
+		"|  (O)  (o) |",
+		" \\__'_'___ / ",
+	},
+	DefaultVX: -0.3,
+	DefaultVY: 0.2,
+}
+
+var Meteors = []SpriteDef{MeteorSmall, MeteorMedium}
+package sprites
+
+var PlanetHuge = SpriteDef{
+	Art: []string{
+		"          _..-===========--.._          ",
+		"      _.-'####################'-._      ",
+		"    .'############################'.    ",
+		"   /################################\\   ",
+		"  |##################################|  ",
+		"  |##==============================##|  ",
+		"  |##################################|  ",
+		"   \\################################/   ",
+		"    '.############################.'    ",
+		"      '-._####################_.-'      ",
+		"          `--============--'            ",
+	},
+	DefaultVX: 0.0,
+	DefaultVY: 0.0,
+}
+
+var PlanetRinged = SpriteDef{
+	Art: []string{
+		"          _..._          ",
+		"        .'#####'.        ",
+		"  _..---|#######|---.._  ",
+		" `---.._|#######|_..---' ",
+		"        '._____.'        ",
+	},
+	DefaultVX: 0.0,
+	DefaultVY: 0.0,
+}
+
+var PlanetSmall = SpriteDef{
+	Art: []string{
+		"   .---.   ",
+		" _/#####\\_ ",
+		"(#########)",
+		" \\_#####_/ ",
+		"   '---'   ",
+	},
+	DefaultVX: 0.0,
+	DefaultVY: 0.0,
+}
+
+var PlanetsBg = []SpriteDef{PlanetHuge, PlanetRinged}
+var PlanetsFg = []SpriteDef{PlanetSmall}
+package sprites
+
+import "math"
+
+var Satellite = SpriteDef{
+	Art: []string{
+		"  _|_  ",
+		"-[___]-",
+		"  _|_  ",
+		" /   \\ ",
+	},
+	DefaultVX: -0.05,
+	DefaultVY: 0.0,
+	UpdateFunc: func(e *Entity, screenWidth, screenHeight int) {
+		e.X += e.VX
+		// Slight hover up and down
+		e.Y += math.Sin(e.Tick*0.05) * 0.05
+	},
+}
+
+var Probe = SpriteDef{
+	Art: []string{
+		"  .-.  ",
+		"=[_I_]-(",
+		"  'V'  ",
+	},
+	DefaultVX: 0.06,
+	DefaultVY: 0.0,
+	UpdateFunc: func(e *Entity, screenWidth, screenHeight int) {
+		e.X += e.VX
+		e.Y += math.Cos(e.Tick*0.03) * 0.03
+	},
+}
+
+var Satellites = []SpriteDef{Satellite, Probe}
+package sprites
+
+import (
+	"github.com/charmbracelet/lipgloss"
+)
+
+type SpriteDef struct {
+	Art        []string
+	Frames     [][]string
+	DefaultVX  float64
+	DefaultVY  float64
+	IsVertical bool
+	UpdateFunc func(e *Entity, screenWidth, screenHeight int)
+}
+
+type Entity struct {
+	Art    []string
+	Frames [][]string
+	X, Y   float64
+	VX, VY float64
+	Tick   float64
+	Style  lipgloss.Style
+	UpdateFunc func(e *Entity, screenWidth, screenHeight int)
+}
+
+func (e *Entity) Width() int {
+	maxWidth := 0
+	for _, line := range e.Art {
+		if len(line) > maxWidth {
+			maxWidth = len(line)
+		}
+	}
+	return maxWidth
+}
+
+func (e *Entity) Height() int {
+	return len(e.Art)
+}
+
+func (e *Entity) Update(screenWidth, screenHeight int) {
+	e.Tick++
+	
+	if len(e.Frames) > 0 {
+		frameIdx := (int(e.Tick) / 4) % len(e.Frames)
+		e.Art = e.Frames[frameIdx]
+	}
+
+	if e.UpdateFunc != nil {
+		e.UpdateFunc(e, screenWidth, screenHeight)
+	} else {
+		e.X += e.VX
+		e.Y += e.VY
+	}
+
+	w := float64(e.Width())
+	h := float64(e.Height())
+
+	if e.X > float64(screenWidth) {
+		e.X = -w
+	} else if e.X < -w {
+		e.X = float64(screenWidth)
+	}
+
+	if e.Y > float64(screenHeight) {
+		e.Y = -h
+	} else if e.Y < -h {
+		e.Y = float64(screenHeight)
+	}
+}
+package sprites
+
+var Star = []string{"."}
+var StarBright = []string{"*"}
+package sprites
+
+import "math"
+
+var SpaceStation = SpriteDef{
+	Art: []string{
+		"      _|_          ",
+		" [I]--[H]--[I]     ",
+		"  |    |    |      ",
+		"==[=]--o--[=]==    ",
+		"  |    |    |      ",
+		" [I]--[H]--[I]     ",
+		"      _|_          ",
+	},
+	DefaultVX: 0.02,
+	DefaultVY: 0.0,
+	UpdateFunc: func(e *Entity, screenWidth, screenHeight int) {
+		e.X += e.VX
+		e.Y += math.Sin(e.Tick*0.02) * 0.02
+	},
+}
+
+var Stations = []SpriteDef{SpaceStation}
+package sprites
+
+import "math"
+
+var UFOClassic = SpriteDef{
+	Frames: [][]string{
+		{
+			"     .---.     ",
+			"  _/__~*~__\\_  ",
+			" (###########) ",
+			"   .  .  .  .  ",
+		},
+		{
+			"     .---.     ",
+			"  _/__~*~__\\_  ",
+			" (###########) ",
+			"   '  '  '  '  ",
+		},
+	},
+	DefaultVX: 0.35,
+	DefaultVY: 0.0,
+	UpdateFunc: func(e *Entity, screenWidth, screenHeight int) {
+		e.X += e.VX
+		e.Y += math.Sin(e.Tick*0.1) * 0.1
+	},
+}
+
+var UFORetro = SpriteDef{
+	Frames: [][]string{
+		{
+			"     _     ",
+			"   /[ ]\\   ",
+			" _(##o##)_ ",
+			"  '-_-_-'  ",
+		},
+		{
+			"     _     ",
+			"   /[ ]\\   ",
+			" _(##o##)_ ",
+			"  '-\"-\"-'  ",
+		},
+	},
+	DefaultVX: -0.25,
+	DefaultVY: 0.0,
+	UpdateFunc: func(e *Entity, screenWidth, screenHeight int) {
+		e.X += e.VX
+		e.Y += math.Cos(e.Tick*0.08) * 0.15
+	},
+}
+
+var Rocket = SpriteDef{
+	Frames: [][]string{
+		{
+			"    ^    ",
+			"   /#\\   ",
+			"  |#A#|  ",
+			"  |#R#|  ",
+			" /|#C#|\\ ",
+			"| |_|_| |",
+			" '==^==' ",
+			"  ( v )  ",
+		},
+		{
+			"    ^    ",
+			"   /#\\   ",
+			"  |#A#|  ",
+			"  |#R#|  ",
+			" /|#C#|\\ ",
+			"| |_|_| |",
+			" '==^==' ",
+			"   (V)   ",
+		},
+		{
+			"    ^    ",
+			"   /#\\   ",
+			"  |#A#|  ",
+			"  |#R#|  ",
+			" /|#C#|\\ ",
+			"| |_|_| |",
+			" '==^==' ",
+			"    v    ",
+		},
+	},
+	DefaultVX: 0.0,
+	DefaultVY: -0.2, // Moves UP
+	IsVertical: true,
+	UpdateFunc: func(e *Entity, screenWidth, screenHeight int) {
+		e.Y += e.VY // Only moves up
+	},
+}
+
+var UFOs = []SpriteDef{UFOClassic, UFORetro, Rocket}
